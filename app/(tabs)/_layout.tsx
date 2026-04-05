@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { House, Search, User } from 'lucide-react-native';
+import { House, Search, Calendar, User } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
@@ -19,6 +19,7 @@ const TAB_BAR_HEIGHT = 85;
 const tabs = [
   { name: 'index', label: 'FEED', icon: House },
   { name: 'discover', label: 'DISCOVER', icon: Search },
+  { name: 'shows', label: 'SHOWS', icon: Calendar },
   { name: 'profile', label: 'PROFILE', icon: User },
 ] as const;
 
@@ -107,6 +108,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="discover" />
+      <Tabs.Screen name="shows" />
       <Tabs.Screen name="profile" />
     </Tabs>
   );
