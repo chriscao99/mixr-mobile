@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Star,
   Music,
@@ -11,7 +12,7 @@ import {
   CircleHelp,
   LogOut,
 } from 'lucide-react-native';
-import { colors, typography, spacing, screen } from '../../src/theme';
+import { colors, gradients, typography, spacing, screen, radius } from '../../src/theme';
 import { Achievement } from '../../src/types';
 import { userProfile } from '../../src/data/mockData';
 import {
@@ -21,6 +22,7 @@ import {
   StatCard,
   MenuItem,
 } from '../../src/components/ui';
+import { SectionHeader } from '../../src/components/ui/SectionHeader';
 
 const ACHIEVEMENT_ICONS: Record<string, React.ComponentType<{ size: number; color: string }>> = {
   star: Star,
@@ -28,28 +30,35 @@ const ACHIEVEMENT_ICONS: Record<string, React.ComponentType<{ size: number; colo
   moon: Moon,
 };
 
-function AchievementCard({ achievement }: { achievement: Achievement }) {
+function AchievementRow({ achievement, isLast }: { achievement: Achievement; isLast: boolean }) {
   const IconComponent = ACHIEVEMENT_ICONS[achievement.icon] ?? Star;
 
   return (
-    <GlassCard borderRadius={16} padding={spacing.lg}>
-      <View style={styles.achievementRow}>
-        <View style={styles.achievementIconCircle}>
-          <IconComponent size={20} color={colors.accentPrimary} />
-        </View>
-        <View style={styles.achievementContent}>
-          <Text style={styles.achievementName}>{achievement.name}</Text>
-          <Text style={styles.achievementDesc}>{achievement.description}</Text>
-        </View>
-        {achievement.earned ? (
-          <View style={styles.checkCircle}>
-            <Check size={16} color={colors.white} />
-          </View>
-        ) : (
-          <Text style={styles.progressText}>{achievement.progress}</Text>
+    <View>
+      <View style={styles.achievementRowOuter}>
+        {/* Left accent for earned achievements */}
+        {achievement.earned && (
+          <View style={styles.earnedAccent} />
         )}
+        <View style={[styles.achievementRow, achievement.earned && styles.achievementRowEarned]}>
+          <View style={styles.achievementIconCircle}>
+            <IconComponent size={20} color={colors.accentPrimary} />
+          </View>
+          <View style={styles.achievementContent}>
+            <Text style={styles.achievementName}>{achievement.name}</Text>
+            <Text style={styles.achievementDesc}>{achievement.description}</Text>
+          </View>
+          {achievement.earned ? (
+            <View style={styles.checkCircle}>
+              <Check size={16} color={colors.white} />
+            </View>
+          ) : (
+            <Text style={styles.progressText}>{achievement.progress}</Text>
+          )}
+        </View>
       </View>
-    </GlassCard>
+      {!isLast && <View style={styles.divider} />}
+    </View>
   );
 }
 
@@ -65,18 +74,24 @@ export default function ProfileScreen() {
         <Text style={styles.headerTitle}>Profile</Text>
       </View>
 
-      {/* Avatar Section */}
-      <View style={styles.avatarSection}>
-        <AnimatedAvatar
-          size={96}
-          showRing
-          initials={userProfile.initials}
-          imageUrl={userProfile.avatarUrl}
+      {/* Avatar Section with gradient backdrop */}
+      <View style={styles.avatarSectionWrapper}>
+        <LinearGradient
+          colors={gradients.heroMesh}
+          style={styles.avatarGradient}
         />
-        <Text style={styles.userName}>{userProfile.name}</Text>
-        <Text style={styles.userHandle}>{userProfile.handle}</Text>
-        <View style={styles.streakContainer}>
-          <StreakBadge streak={userProfile.streak} />
+        <View style={styles.avatarSection}>
+          <AnimatedAvatar
+            size={110}
+            showRing
+            initials={userProfile.initials}
+            imageUrl={userProfile.avatarUrl}
+          />
+          <Text style={styles.userName}>{userProfile.name}</Text>
+          <Text style={styles.userHandle}>{userProfile.handle}</Text>
+          <View style={styles.streakContainer}>
+            <StreakBadge streak={userProfile.streak} />
+          </View>
         </View>
       </View>
 
@@ -89,43 +104,55 @@ export default function ProfileScreen() {
 
       {/* Achievements Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Achievements</Text>
-        <View style={styles.achievementsList}>
-          {userProfile.achievements.map((achievement) => (
-            <AchievementCard key={achievement.id} achievement={achievement} />
-          ))}
+        <SectionHeader title="Achievements" accentLine />
+        <View style={styles.sectionContentSpacing}>
+          <GlassCard borderRadius={16} padding={spacing.lg}>
+            {userProfile.achievements.map((achievement, index) => (
+              <AchievementRow
+                key={achievement.id}
+                achievement={achievement}
+                isLast={index === userProfile.achievements.length - 1}
+              />
+            ))}
+          </GlassCard>
         </View>
       </View>
 
       {/* Settings Menu */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Settings</Text>
-        <View style={styles.menuList}>
-          <MenuItem
-            icon={<User size={20} color={colors.accentPrimary} />}
-            title="Edit Profile"
-            onPress={() => {}}
-          />
-          <MenuItem
-            icon={<Bell size={20} color={colors.accentPrimary} />}
-            title="Notifications"
-            onPress={() => {}}
-          />
-          <MenuItem
-            icon={<Shield size={20} color={colors.accentPrimary} />}
-            title="Privacy"
-            onPress={() => {}}
-          />
-          <MenuItem
-            icon={<CircleHelp size={20} color={colors.accentPrimary} />}
-            title="Help & Support"
-            onPress={() => {}}
-          />
-          <MenuItem
-            icon={<LogOut size={20} color={colors.red} />}
-            title="Log Out"
-            onPress={() => {}}
-          />
+        <SectionHeader title="Settings" accentLine />
+        <View style={styles.sectionContentSpacing}>
+          <GlassCard borderRadius={16} padding={spacing.md}>
+            <MenuItem
+              icon={<User size={20} color={colors.accentPrimary} />}
+              title="Edit Profile"
+              onPress={() => {}}
+            />
+            <View style={styles.divider} />
+            <MenuItem
+              icon={<Bell size={20} color={colors.accentPrimary} />}
+              title="Notifications"
+              onPress={() => {}}
+            />
+            <View style={styles.divider} />
+            <MenuItem
+              icon={<Shield size={20} color={colors.accentPrimary} />}
+              title="Privacy"
+              onPress={() => {}}
+            />
+            <View style={styles.divider} />
+            <MenuItem
+              icon={<CircleHelp size={20} color={colors.accentPrimary} />}
+              title="Help & Support"
+              onPress={() => {}}
+            />
+            <View style={styles.divider} />
+            <MenuItem
+              icon={<LogOut size={20} color={colors.red} />}
+              title="Log Out"
+              onPress={() => {}}
+            />
+          </GlassCard>
         </View>
       </View>
     </ScrollView>
@@ -149,9 +176,20 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: 'center',
   },
+  avatarSectionWrapper: {
+    position: 'relative',
+    marginTop: spacing['2xl'],
+  },
+  avatarGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+    opacity: 0.3,
+  },
   avatarSection: {
     alignItems: 'center',
-    marginTop: spacing['2xl'],
   },
   userName: {
     ...typography.h3,
@@ -177,17 +215,27 @@ const styles = StyleSheet.create({
     marginTop: screen.gap,
     paddingHorizontal: screen.paddingH,
   },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
+  sectionContentSpacing: {
+    marginTop: spacing.md,
   },
-  achievementsList: {
-    gap: 10,
+  achievementRowOuter: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  earnedAccent: {
+    width: 3,
+    backgroundColor: colors.accentPrimary,
+    borderRadius: 1.5,
+    marginRight: spacing.sm,
   },
   achievementRow: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  achievementRowEarned: {
+    // No extra padding needed, accent provides visual cue
   },
   achievementIconCircle: {
     width: 40,
@@ -221,7 +269,8 @@ const styles = StyleSheet.create({
     ...typography.bodySm,
     color: colors.textMuted,
   },
-  menuList: {
-    gap: spacing.sm,
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderSubtle,
   },
 });

@@ -89,4 +89,21 @@ export const typography = {
     fontSize: 11,
     lineHeight: 14,
   } as TextStyle,
+
+  // Display
+  display: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 36,
+    lineHeight: 40,
+    letterSpacing: -0.8,
+  } as TextStyle,
+
+  // Overline
+  overline: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase' as const,
+  } as TextStyle,
 } as const;

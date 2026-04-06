@@ -13,6 +13,7 @@ import {
 import { shows, venues, djs, genres } from './mockData';
 import { daysFromNow, resolveDateRange, isDateInRange } from './dateUtils';
 import { haversine } from './geoUtils';
+import { computeProximityScore, computeTimeUrgencyScore, computeSocialScore } from './nearbyService';
 
 // --- Internal helpers ---
 
@@ -121,6 +122,21 @@ export async function searchShows(
     results = results.filter((r) => !r.show.isSoldOut);
   }
 
+  // 8.5 Distance filter
+  if (filter.maxDistanceKm !== undefined && userLocation) {
+    results = results.filter(
+      (r) => r.distance !== undefined && r.distance <= filter.maxDistanceKm!
+    );
+  }
+
+  // 8.6 Followed DJs only
+  if (filter.followedDjsOnly) {
+    const followedIds = new Set(djs.filter((d) => d.isFollowing).map((d) => d.id));
+    results = results.filter(
+      (r) => r.show.djIds.some((id) => followedIds.has(id))
+    );
+  }
+
   // 9. Sort
   results = sortResults(results, sort, userLocation);
 
@@ -162,9 +178,35 @@ function sortResults(
         sorted.sort((a, b) => a.show.startTime.localeCompare(b.show.startTime));
       }
       break;
+    case 'nearby_rank':
+      if (userLocation) {
+        const followedDjIds = djs.filter((d) => d.isFollowing).map((d) => d.id);
+        sorted.sort((a, b) => {
+          const scoreA = computeNearbyRank(a, userLocation, followedDjIds);
+          const scoreB = computeNearbyRank(b, userLocation, followedDjIds);
+          return dir * (scoreB - scoreA);
+        });
+      } else {
+        sorted.sort((a, b) => a.show.startTime.localeCompare(b.show.startTime));
+      }
+      break;
   }
 
   return sorted;
+}
+
+function computeNearbyRank(
+  result: ShowSearchResult,
+  userLocation: Coordinate,
+  followedDjIds: string[],
+): number {
+  const distKm = result.distance ?? 999;
+  return (
+    computeProximityScore(distKm) * 0.40 +
+    computeTimeUrgencyScore(result.show.date, result.show.startTime) * 0.30 +
+    computeSocialScore(result.show.djIds, followedDjIds) * 0.20 +
+    result.show.popularity * 0.10
+  );
 }
 
 /**

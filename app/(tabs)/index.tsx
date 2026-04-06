@@ -3,13 +3,13 @@ import {
   StyleSheet,
   View,
   Text,
-  ScrollView,
-  Image,
   Pressable,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { MessageCircle, Send } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 
 import { colors, gradients, typography, spacing, screen } from '../../src/theme';
 import { FeedItem } from '../../src/types';
@@ -17,7 +17,13 @@ import { feedItems, userProfile } from '../../src/data/mockData';
 import { GlassCard } from '../../src/components/ui/GlassCard';
 import { HeartButton } from '../../src/components/ui/HeartButton';
 import { StreakBadge } from '../../src/components/ui/StreakBadge';
+import { SectionHeader } from '../../src/components/ui/SectionHeader';
+import { FeaturedShowCard } from '../../src/components/nearby/FeaturedShowCard';
+import { NearbyShowsCarousel } from '../../src/components/nearby/NearbyShowsCarousel';
+import { LocationPermissionPrompt } from '../../src/components/location/LocationPermissionPrompt';
 import { useStaggerEntrance } from '../../src/hooks/useStaggerEntrance';
+import { useNearbyShows } from '../../src/hooks/useNearbyShows';
+import { useLocationContext } from '../../src/context/LocationContext';
 
 function FeedCard({
   item,
@@ -37,7 +43,12 @@ function FeedCard({
       <GlassCard borderRadius={24}>
         {/* Hero image with gradient overlay */}
         <View style={styles.heroContainer}>
-          <Image source={{ uri: item.imageUrl }} style={styles.heroImage} />
+          <Image
+            source={item.imageUrl}
+            style={styles.heroImage}
+            contentFit="cover"
+            transition={300}
+          />
           <LinearGradient
             colors={['transparent', colors.bgPrimary] as [string, string]}
             style={styles.heroGradient}
@@ -45,7 +56,11 @@ function FeedCard({
 
           {/* DJ info row at bottom of image */}
           <View style={styles.djInfoRow}>
-            <Image source={{ uri: item.dj.imageUrl }} style={styles.djAvatar} />
+            <Image
+              source={item.dj.imageUrl}
+              style={styles.djAvatar}
+              contentFit="cover"
+            />
             <Text style={styles.djName}>{item.dj.name}</Text>
             <Text style={styles.timestamp}>{item.timestamp}</Text>
           </View>
@@ -76,6 +91,10 @@ function FeedCard({
 }
 
 export default function HomeFeedScreen() {
+  const router = useRouter();
+  const nearby = useNearbyShows();
+  const location = useLocationContext();
+
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     feedItems.forEach((item) => {
@@ -88,6 +107,14 @@ export default function HomeFeedScreen() {
     setLikedItems((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const featuredShow = nearby.shows.length > 0 ? nearby.shows[0] : null;
+  // Carousel shows exclude the featured one
+  const carouselShows = nearby.shows.length > 1 ? nearby.shows.slice(1) : [];
+
+  const handleSeeAllNearby = () => {
+    router.push('/(tabs)/shows');
+  };
+
   return (
     <View style={styles.screen}>
       {/* Header */}
@@ -96,22 +123,68 @@ export default function HomeFeedScreen() {
         <StreakBadge streak={userProfile.streak} />
       </View>
 
-      {/* Feed */}
-      <ScrollView
+      {/* Scrollable content */}
+      <Animated.ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {feedItems.map((item, index) => (
-          <FeedCard
-            key={item.id}
-            item={item}
-            index={index}
-            isLiked={likedItems[item.id] ?? false}
-            onToggleLike={() => toggleLike(item.id)}
+        {/* Hero section with mesh gradient */}
+        <View style={styles.heroSection}>
+          <LinearGradient
+            colors={[...gradients.heroMesh]}
+            style={styles.heroMeshGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           />
-        ))}
-      </ScrollView>
+          {featuredShow && (
+            <View style={styles.featuredCardContainer}>
+              <FeaturedShowCard show={featuredShow} />
+            </View>
+          )}
+        </View>
+
+        {/* Near You section */}
+        {location.permission !== 'denied' && (
+          <View style={styles.section}>
+            {location.permission === 'undetermined' ? (
+              <View style={styles.sectionPadded}>
+                <SectionHeader title="NEAR YOU" />
+                <View style={styles.permissionPrompt}>
+                  <LocationPermissionPrompt
+                    variant="inline"
+                    onRequestPermission={location.requestPermission}
+                  />
+                </View>
+              </View>
+            ) : (
+              <NearbyShowsCarousel
+                shows={carouselShows}
+                isLoading={nearby.isLoading}
+                onSeeAll={handleSeeAllNearby}
+              />
+            )}
+          </View>
+        )}
+
+        {/* Your Feed section */}
+        <View style={styles.section}>
+          <View style={styles.sectionPadded}>
+            <SectionHeader title="YOUR FEED" />
+          </View>
+          <View style={styles.feedContainer}>
+            {feedItems.map((item, index) => (
+              <FeedCard
+                key={item.id}
+                item={item}
+                index={index}
+                isLiked={likedItems[item.id] ?? false}
+                onToggleLike={() => toggleLike(item.id)}
+              />
+            ))}
+          </View>
+        </View>
+      </Animated.ScrollView>
     </View>
   );
 }
@@ -141,16 +214,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: screen.paddingH,
     paddingBottom: screen.tabBarHeight + spacing.lg,
   },
 
-  // Feed card
+  // Hero section
+  heroSection: {
+    position: 'relative',
+    minHeight: 200,
+  },
+  heroMeshGradient: {
+    ...StyleSheet.absoluteFillObject,
+    height: 200,
+  },
+  featuredCardContainer: {
+    paddingHorizontal: screen.paddingH,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+
+  // Sections
+  section: {
+    marginTop: screen.sectionGap,
+  },
+  sectionPadded: {
+    paddingHorizontal: screen.paddingH,
+  },
+  permissionPrompt: {
+    marginTop: spacing.lg,
+  },
+
+  // Feed
+  feedContainer: {
+    paddingHorizontal: screen.paddingH,
+    marginTop: spacing.xl,
+  },
   feedCardWrapper: {
     marginBottom: spacing.xl,
   },
 
-  // Hero image
+  // Hero image in feed cards
   heroContainer: {
     height: 200,
     position: 'relative',
@@ -161,7 +263,6 @@ const styles = StyleSheet.create({
   heroImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   heroGradient: {
     ...StyleSheet.absoluteFillObject,

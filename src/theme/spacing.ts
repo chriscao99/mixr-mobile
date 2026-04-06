@@ -12,6 +12,8 @@ export const spacing = {
   '3xl': 28,
   '4xl': 32,
   '5xl': 40,
+  '6xl': 48,
+  '8xl': 64,
 } as const;
 
 export const radius = {
@@ -29,4 +31,6 @@ export const screen = {
   statusBarHeight: 62,
   tabBarHeight: 95, // 62px pill + padding
   gap: 32,
+  sectionGap: 40,
+  cardGap: 16,
 } as const;

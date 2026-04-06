@@ -31,7 +31,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Mixr uses your location to find shows happening nearby."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

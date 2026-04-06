@@ -1,4 +1,5 @@
 import { DJ, Genre } from './index';
+import { DistanceInfo } from './location';
 
 // --- Venue ---
 
@@ -65,9 +66,11 @@ export interface ShowFilter {
   djIds?: string[];
   priceMax?: number;
   excludeSoldOut?: boolean;
+  maxDistanceKm?: number;
+  followedDjsOnly?: boolean;
 }
 
-export type ShowSortField = 'date' | 'distance' | 'popularity';
+export type ShowSortField = 'date' | 'distance' | 'popularity' | 'nearby_rank';
 export type ShowSortDirection = 'asc' | 'desc';
 
 export interface ShowSortOption {
@@ -83,6 +86,7 @@ export interface ShowSearchResult {
   djs: DJ[];
   genres: Genre[];
   distance?: number;
+  distanceInfo?: DistanceInfo;
 }
 
 export interface PaginatedResult<T> {

@@ -15,36 +15,42 @@ export const djs: DJ[] = [
     genres: ['House', 'Techno', 'Deep House'],
     imageUrl: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=400',
     followers: 2400, shows: 127, rating: 4.8, isFollowing: false,
+    homeCoordinate: { latitude: 34.0522, longitude: -118.2437 },
   },
   {
     id: '2', name: 'DJ Aurora', location: 'New York, NY',
     genres: ['House', 'Deep House'],
     imageUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
     followers: 3100, shows: 89, rating: 4.9, isFollowing: true,
+    homeCoordinate: { latitude: 40.7128, longitude: -74.0060 },
   },
   {
     id: '3', name: 'DJ Kova', location: 'Miami, FL',
     genres: ['Techno', 'House'],
     imageUrl: 'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400',
     followers: 1800, shows: 64, rating: 4.6, isFollowing: true,
+    homeCoordinate: { latitude: 25.7617, longitude: -80.1918 },
   },
   {
     id: '4', name: 'Luna Beats', location: 'Chicago, IL',
     genres: ['Hip-Hop', 'R&B'],
     imageUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400',
     followers: 950, shows: 42, rating: 4.7, isFollowing: false,
+    homeCoordinate: { latitude: 41.8781, longitude: -87.6298 },
   },
   {
     id: '5', name: 'Zara Beats', location: 'Atlanta, GA',
     genres: ['Techno', 'House'],
     imageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400',
     followers: 720, shows: 31, rating: 4.5, isFollowing: false,
+    homeCoordinate: { latitude: 33.7490, longitude: -84.3880 },
   },
   {
     id: '6', name: 'MC Flow', location: 'Houston, TX',
     genres: ['Hip-Hop', 'Afrobeats'],
     imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400',
     followers: 1100, shows: 55, rating: 4.4, isFollowing: false,
+    homeCoordinate: { latitude: 29.7604, longitude: -95.3698 },
   },
 ];
 

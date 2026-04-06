@@ -1,26 +1,32 @@
-# Data Layer Implementation: Search & Filtering
+# Database/Data Layer Implementation: Design Refresh + Location-Based Show Discovery
 
-## Files Created (5)
+## New Files Created
 
-1. **`src/types/show.ts`** — All new type definitions: Show, Venue, VenueType, City, SavedFilter, ShowFilter, DateRangePreset, CustomDateRange, ShowSortField, ShowSortDirection, ShowSortOption, ShowSearchResult, PaginatedResult<T>, Coordinate
+| File | Purpose |
+|------|---------|
+| `src/types/location.ts` | Location types: UserLocation, LocationState, DistanceInfo, NearbyRankingWeights, RankedNearbyShow |
+| `src/theme/effects.ts` | Shadow/glow presets: glowPurple, glowTeal, cardLift, cardPressed |
+| `src/data/nearbyService.ts` | Nearby show ranking with composite scoring algorithm |
 
-2. **`src/data/dateUtils.ts`** — Date utilities: daysFromNow(n), datetimeFromNow(n, hour, minute), resolveDateRange(preset), isDateInRange(date, start, end)
+## Modified Files
 
-3. **`src/data/geoUtils.ts`** — Geo utilities: haversine distance calc, DEFAULT_LOCATION (downtown LA)
+| File | Changes |
+|------|---------|
+| `src/types/index.ts` | Added homeCoordinate to DJ, extended FeedItem with nearby types, location type re-exports |
+| `src/types/show.ts` | Added maxDistanceKm/followedDjsOnly to ShowFilter, nearby_rank to ShowSortField, distanceInfo to ShowSearchResult |
+| `src/theme/colors.ts` | Added glow colors, surface layers, gradient mesh points, 6 new gradient presets |
+| `src/theme/typography.ts` | Added display and overline text styles |
+| `src/theme/spacing.ts` | Added 6xl/8xl spacing, sectionGap/cardGap screen values |
+| `src/theme/index.ts` | Added effects re-export |
+| `src/data/geoUtils.ts` | Added LOCATION_PRESETS, formatDistance, createDistanceInfo, getCityFromCoordinate |
+| `src/data/mockData.ts` | Added homeCoordinate to all 6 DJs |
+| `src/data/showService.ts` | Added distance filter, followed-DJs-only filter, nearby_rank sort |
 
-4. **`src/data/showService.ts`** — All 6 service functions: searchShows, getShowById, getVenues, getCities, getUpcomingShowsForDj, getShowsAtVenue. Async with full filter chain.
+## Key Implementation Details
 
-5. **`src/data/filterStorage.ts`** — AsyncStorage CRUD for saved filters. 3 default presets, max 20 limit, 50-char name limit.
-
-## Files Modified (2)
-
-6. **`src/types/index.ts`** — Added re-exports for all new types from ./show
-
-7. **`src/data/mockData.ts`** — Added 9 venues (5 cities) and 18 shows with relative dates, varied prices/popularity, multi-DJ shows, sold-out shows
-
-## Key Design Decisions
-- All service functions are async (Promise-returning) for future API swap
-- Filter chain follows exact order from architecture doc
-- Mock data uses relative date helpers (daysFromNow) so data stays fresh
-- Default filter presets are seeded on first load and cannot be deleted
-- No changes to existing DJ or Genre interfaces
+- All type changes are additive (no breaking changes)
+- Nearby ranking uses composite score: 40% proximity + 30% time urgency + 20% social signal + 10% popularity
+- Distance formatting in miles by default, supports < 1 mi display
+- Mock reverse geocoding via proximity to preset city coordinates (within 50km)
+- Show service filter chain extended with steps 8.5 (distance) and 8.6 (followed DJs)
+- TypeScript compilation: zero errors in changed files
