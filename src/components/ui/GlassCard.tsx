@@ -9,6 +9,8 @@ interface GlassCardProps {
   borderRadius?: number;
   intensity?: number;
   padding?: number;
+  glowColor?: string;
+  glowIntensity?: number;
 }
 
 export function GlassCard({
@@ -17,9 +19,21 @@ export function GlassCard({
   borderRadius = 28,
   intensity = 20,
   padding = 0,
+  glowColor,
+  glowIntensity = 0.25,
 }: GlassCardProps) {
+  const glowStyle: ViewStyle | undefined = glowColor
+    ? {
+        shadowColor: glowColor,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: glowIntensity,
+        shadowRadius: 20,
+        elevation: 10,
+      }
+    : undefined;
+
   return (
-    <View style={[styles.container, { borderRadius }, style]}>
+    <View style={[styles.container, { borderRadius }, glowStyle, style]}>
       <BlurView intensity={intensity} tint="dark" style={[styles.blur, { borderRadius, padding }]}>
         {children}
       </BlurView>

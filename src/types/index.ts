@@ -1,3 +1,6 @@
+import { Coordinate } from './show';
+import { DistanceInfo } from './location';
+
 export interface DJ {
   id: string;
   name: string;
@@ -8,12 +11,13 @@ export interface DJ {
   shows: number;
   rating: number;
   isFollowing: boolean;
+  homeCoordinate?: Coordinate;
 }
 
 export interface FeedItem {
   id: string;
   dj: DJ;
-  type: 'new_mix' | 'upcoming_show' | 'collab' | 'announcement';
+  type: 'new_mix' | 'upcoming_show' | 'collab' | 'announcement' | 'nearby_show' | 'followed_dj_nearby';
   title: string;
   subtitle: string;
   imageUrl: string;
@@ -21,6 +25,9 @@ export interface FeedItem {
   comments: number;
   isLiked: boolean;
   timestamp: string;
+  showId?: string;
+  distanceInfo?: DistanceInfo;
+  venueName?: string;
 }
 
 export interface UserProfile {
@@ -69,3 +76,13 @@ export type {
   SavedFilter,
   Coordinate,
 } from './show';
+
+export type {
+  LocationPermissionStatus,
+  UserLocation,
+  LocationState,
+  DistanceUnit,
+  DistanceInfo,
+  NearbyRankingWeights,
+  RankedNearbyShow,
+} from './location';

@@ -1,30 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   Pressable,
   Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
 import { ChevronLeft, Music, MapPin, Users } from 'lucide-react-native';
-import { colors, gradients, typography, spacing } from '../../src/theme';
+import { colors, gradients, typography, spacing, effects } from '../../src/theme';
 import { djs, genres as genreData } from '../../src/data/mockData';
+import { getUpcomingShowsForDj } from '../../src/data/showService';
 import { GlassCard } from '../../src/components/ui/GlassCard';
 import { GradientButton } from '../../src/components/ui/GradientButton';
 import { FollowButton } from '../../src/components/ui/FollowButton';
 import { StatCard } from '../../src/components/ui/StatCard';
 import { GenrePill } from '../../src/components/ui/GenrePill';
+import { SectionHeader } from '../../src/components/ui/SectionHeader';
+import { ShowCard } from '../../src/components/shows/ShowCard';
+import { ShowSearchResult } from '../../src/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const HERO_HEIGHT = 320;
+const HERO_HEIGHT = 360;
 
 interface ActivityItem {
   id: string;
@@ -37,7 +42,14 @@ export default function DJProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const dj = djs.find((d) => d.id === id);
   const [isFollowing, setIsFollowing] = useState(dj?.isFollowing ?? false);
+  const [upcomingShows, setUpcomingShows] = useState<ShowSearchResult[]>([]);
   const scrollY = useSharedValue(0);
+
+  useEffect(() => {
+    if (id) {
+      getUpcomingShowsForDj(id).then(setUpcomingShows);
+    }
+  }, [id]);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -99,7 +111,7 @@ export default function DJProfileScreen() {
             resizeMode="cover"
           />
           <LinearGradient
-            colors={gradients.heroFade}
+            colors={['transparent', 'rgba(7, 7, 10, 0.6)', colors.bgPrimary]}
             style={styles.heroGradient}
           />
           <View style={styles.heroTextContainer}>
@@ -109,7 +121,7 @@ export default function DJProfileScreen() {
         </View>
 
         {/* Stats Row */}
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, effects.glowPurple]}>
           <StatCard value={dj.followers} label="Followers" delay={0} />
           <StatCard value={dj.shows} label="Shows" delay={100} />
           <StatCard value={dj.rating} label="Rating" delay={200} />
@@ -136,7 +148,7 @@ export default function DJProfileScreen() {
 
         {/* Recent Activity */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <SectionHeader title="Recent Activity" accentLine />
         </View>
         <View style={styles.activityList}>
           {activities.map((activity) => (
@@ -151,11 +163,32 @@ export default function DJProfileScreen() {
             </GlassCard>
           ))}
         </View>
+
+        {/* Upcoming Shows */}
+        {upcomingShows.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <SectionHeader title="Upcoming Shows" accentLine />
+            </View>
+            <View style={styles.showsList}>
+              {upcomingShows.map((result, index) => (
+                <ShowCard
+                  key={result.show.id}
+                  result={result}
+                  index={index}
+                  compact
+                />
+              ))}
+            </View>
+          </>
+        )}
       </Animated.ScrollView>
 
       {/* Back Button (absolute, above scroll) */}
       <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={28} color={colors.white} />
+        <BlurView intensity={30} tint="dark" style={styles.backButtonBlur}>
+          <ChevronLeft size={28} color={colors.white} />
+        </BlurView>
       </Pressable>
     </View>
   );
@@ -220,10 +253,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    overflow: 'hidden',
+    zIndex: 10,
+  },
+  backButtonBlur: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
   },
 
   // Stats
@@ -250,15 +287,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 
-  // Activity
+  // Sections
   sectionHeader: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing['2xl'],
     paddingBottom: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.h3,
-    color: colors.textPrimary,
   },
   activityList: {
     paddingHorizontal: spacing.xl,
@@ -291,5 +324,9 @@ const styles = StyleSheet.create({
     ...typography.bodySm,
     color: colors.textMuted,
     marginTop: 2,
+  },
+  showsList: {
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
   },
 });

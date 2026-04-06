@@ -12,14 +12,15 @@ import { colors, typography, spacing, screen } from '../../src/theme';
 import { ShowFilter, ShowSortField } from '../../src/types';
 import { genres } from '../../src/data/mockData';
 import { getVenues } from '../../src/data/showService';
-import { useShowSearch } from '../../src/hooks/useShowSearch';
-import { DEFAULT_LOCATION } from '../../src/data/geoUtils';
+import { useShowSearchContext } from '../../src/context/ShowSearchContext';
+import { useLocationContext } from '../../src/context/LocationContext';
 
 import { SearchBar } from '../../src/components/shows/SearchBar';
 import { FilterChips } from '../../src/components/shows/FilterChips';
 import { ViewToggle } from '../../src/components/shows/ViewToggle';
 import { ShowListView } from '../../src/components/shows/ShowListView';
 import { ShowMapView } from '../../src/components/shows/ShowMapView';
+import { LocationHeader } from '../../src/components/location/LocationHeader';
 
 function SortPill({
   label,
@@ -81,10 +82,18 @@ const sortStyles = StyleSheet.create({
 });
 
 export default function ShowsScreen() {
-  const search = useShowSearch(DEFAULT_LOCATION);
+  const search = useShowSearchContext();
+  const location = useLocationContext();
   const [activeView, setActiveView] = useState<'list' | 'map'>('list');
   const [venueMap, setVenueMap] = useState<Record<string, string>>({});
   const [searchKey, setSearchKey] = useState(0);
+
+  // Default to nearby_rank sort when location is available
+  useEffect(() => {
+    if (location.permission === 'granted' && !location.isLoading) {
+      search.setSort({ field: 'nearby_rank', direction: 'asc' });
+    }
+  }, [location.permission, location.isLoading]);
 
   // Load venue names for filter chips
   useEffect(() => {
@@ -123,6 +132,11 @@ export default function ShowsScreen() {
     router.push('/filter-modal' as any);
   };
 
+  const isNearbySort = search.sort.field === 'nearby_rank';
+  const resultsLabel = isNearbySort
+    ? `${search.total} nearby ${search.total === 1 ? 'show' : 'shows'}`
+    : `${search.total} ${search.total === 1 ? 'show' : 'shows'}`;
+
   return (
     <View style={styles.screen}>
       {/* Header */}
@@ -131,6 +145,16 @@ export default function ShowsScreen() {
         {search.isLoading && search.results.length > 0 && (
           <ActivityIndicator size="small" color={colors.accentPrimary} />
         )}
+      </View>
+
+      {/* Location header */}
+      <View style={styles.locationContainer}>
+        <LocationHeader
+          cityLabel={location.cityLabel}
+          permission={location.permission}
+          onRequestPermission={location.requestPermission}
+          isLoading={location.isLoading}
+        />
       </View>
 
       {/* Search bar */}
@@ -162,8 +186,8 @@ export default function ShowsScreen() {
             onPress={handleSortChange}
           />
           <SortPill
-            label="Distance"
-            field="distance"
+            label="Nearby"
+            field="nearby_rank"
             activeField={search.sort.field}
             onPress={handleSortChange}
           />
@@ -179,9 +203,7 @@ export default function ShowsScreen() {
 
       {/* Results count */}
       <View style={styles.resultsRow}>
-        <Text style={styles.resultsCount}>
-          {search.total} {search.total === 1 ? 'show' : 'shows'}
-        </Text>
+        <Text style={styles.resultsCount}>{resultsLabel}</Text>
       </View>
 
       {/* Content area */}
@@ -202,7 +224,7 @@ export default function ShowsScreen() {
           <View style={styles.viewContainer}>
             <ShowMapView
               results={search.results}
-              userLocation={DEFAULT_LOCATION}
+              userLocation={location.effectiveLocation}
             />
           </View>
         )}
@@ -227,6 +249,9 @@ const styles = StyleSheet.create({
   title: {
     ...typography.h1,
     color: colors.textPrimary,
+  },
+  locationContainer: {
+    paddingHorizontal: screen.paddingH,
   },
   searchContainer: {
     paddingHorizontal: screen.paddingH,

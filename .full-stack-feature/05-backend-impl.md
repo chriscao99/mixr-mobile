@@ -1,22 +1,37 @@
-# Backend/Service Layer Implementation: Search & Filtering
+# Service Layer Implementation: Design Refresh + Location-Based Show Discovery
 
-## Note
-Since this feature uses mock data only (no real backend), the service layer was implemented as part of Step 4 (Data Layer). The service layer in `src/data/showService.ts` serves as the "backend" — all business logic (filtering, sorting, pagination, entity resolution) lives there.
+## Dependencies Installed
+- `expo-location` — GPS and permission handling
+- `expo-image` — Performant cached image loading
 
-## Service Layer Summary
+## New Files Created
 
-### showService.ts
-- `searchShows(filter, sort, page, pageSize, userLocation?)` — Main search with 10-step filter chain
-- `getShowById(id)` — Single show detail with resolved entities
-- `getVenues()` — All venues for filter picker
-- `getCities()` — Derived cities with show counts
-- `getUpcomingShowsForDj(djId)` — Shows for DJ detail screen
-- `getShowsAtVenue(venueId)` — Shows at a specific venue
+| File | Purpose |
+|------|---------|
+| `src/context/UserContext.tsx` | Mock user profile + followed DJ tracking with toggleFollow |
+| `src/context/LocationContext.tsx` | Location state provider — effectiveLocation, cityLabel, permission controls |
+| `src/hooks/useUserLocation.ts` | expo-location integration — GPS, permissions, caching, fallback |
+| `src/hooks/useNearbyShows.ts` | Ranked nearby shows hook consuming LocationContext + UserContext |
 
-### filterStorage.ts
-- `getSavedFilters()` — Read all presets from AsyncStorage
-- `saveFilter(name, filter)` — Create new preset
-- `updateFilter(id, updates)` — Update existing preset
-- `deleteFilter(id)` — Remove preset (default presets protected)
+## Modified Files
 
-All functions async, consistent return types, ready for API swap.
+| File | Changes |
+|------|---------|
+| `app/_layout.tsx` | Added LocationProvider + ConnectedShowSearchProvider to tree; slide_from_right transitions |
+
+## Context Provider Tree
+```
+GestureHandlerRootView
+  └── UserProvider (profile, followedDjIds)
+      └── LocationProvider (GPS, permission, effectiveLocation)
+          └── ConnectedShowSearchProvider (bridges location → ShowSearchProvider)
+              └── Stack Navigator
+```
+
+## Key Behaviors
+- Location permission checked silently on mount (no auto-prompt)
+- Cached last-known location from AsyncStorage for instant display
+- Falls back to DEFAULT_LOCATION (downtown LA) if no GPS
+- cityLabel derived via mock reverse geocoding
+- ShowSearchProvider now receives real effectiveLocation instead of undefined
+- Screen transitions: 250ms slide_from_right for show/DJ detail screens

@@ -7,3 +7,5 @@ export { GenrePill } from './GenrePill';
 export { StatCard } from './StatCard';
 export { AnimatedAvatar } from './AnimatedAvatar';
 export { MenuItem } from './MenuItem';
+export { SectionHeader } from './SectionHeader';
+export { ShimmerPlaceholder } from './ShimmerPlaceholder';

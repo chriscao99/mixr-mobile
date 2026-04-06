@@ -1,60 +1,96 @@
-# Requirements: Search & Filtering for Shows/Events
+# Requirements: Design Refresh + Location-Based Show Discovery
 
 ## Problem Statement
-Users want to find shows near them or filter by date/venue but currently have no way to narrow down upcoming events. The app lacks event planning tools — users can't search for specific shows or filter the event catalog to find what's relevant to them.
+
+The Mixr app currently feels too generic/templated — it needs a distinctive, premium feel that matches the music/nightlife vibe. Additionally, users have no way to find nearby or upcoming shows automatically — they have to search manually, which kills engagement. Both problems are equally important and blocking growth.
 
 ## Acceptance Criteria
-- [ ] Users can search shows by keyword (DJ name, venue name, event name)
-- [ ] Users can filter by date range (today, this week, this weekend, custom range)
-- [ ] Users can filter by city/venue/location
-- [ ] Users can filter by genre
-- [ ] Users can sort results by distance, date, or popularity
-- [ ] Users can save filter presets for quick reuse
-- [ ] Map view shows nearby shows with pins on a map
-- [ ] Results update in real-time as filters change
-- [ ] Search and filters integrate into the existing Discover tab and potentially a new Shows/Events tab
+
+- [ ] App has a premium dark/glass aesthetic with smooth, attention-grabbing animations
+- [ ] All screens feel sleek, modern, and cohesive — not like a stock template
+- [ ] A "Nearby Shows" section appears on the home screen using device location
+- [ ] Shows tab is redesigned with location-based discovery integrated into it
+- [ ] Location permissions are requested gracefully with explanation
+- [ ] Shows are sorted/surfaced by proximity and upcoming date
+- [ ] The overall visual language feels like a high-end nightlife/music app
 
 ## Scope
 
 ### In Scope
-- Text search across shows (DJ name, venue, event name)
-- Date range filtering (presets + custom)
-- Location/venue filtering
-- Genre filtering
-- Sort by distance/date/popularity
-- Saved filter presets (persisted locally)
-- Map view of nearby shows (using react-native-maps)
-- Integration with existing Discover tab
-- Extending mock data system for shows/events
+
+- Visual redesign of all existing screens (Feed, Discover, Shows, Profile, DJ Detail)
+- Premium animation upgrades (entrance animations, transitions, micro-interactions)
+- Location-based show discovery on Home screen (nearby shows carousel)
+- Shows tab redesign with location awareness (distance display, proximity sorting)
+- Device location integration (permissions, geolocation)
+- Distance calculation from user to venues
+- Mock data with realistic lat/lng coordinates (already exists in venues)
+- Enhanced glassmorphism, gradients, and depth effects
+- Polished tab bar and navigation transitions
 
 ### Out of Scope
-- Ticket purchasing or checkout flows
-- Social features (sharing results, friends going, collaborative playlists)
-- AI/ML-powered recommendations or "shows you might like"
-- Real backend/API — all data will use mock data system
+
+- Ticket purchasing / payment flows (link out to external sites if needed)
+- Social features (sharing, commenting, social interactions around shows)
+- Real backend API — keep using mock data, focus on UI/UX and location logic
+- Push notifications for nearby shows
+- User onboarding flow
 
 ## Technical Constraints
-- No backend — extend existing mock data in `src/data/mockData.ts`
-- All data is local/mock for now; design data layer so it can be swapped for a real API later
-- Must work within existing Expo SDK 54 + React Native 0.81 constraints
+
+- No strong library preferences — use whatever works best within Expo managed workflow
+- Must work within Expo SDK 54 managed workflow
+- React Native 0.81 with New Architecture enabled
+- Existing libraries: react-native-reanimated, react-native-gesture-handler, expo-blur, expo-linear-gradient, lucide-react-native
+- Existing react-native-maps integration (optional dependency with fallback)
+- Portrait orientation only
+- Dark-first design (existing theme)
 
 ## Technology Stack
-- **Frontend**: Expo SDK 54, React Native 0.81, Expo Router v6
-- **UI**: Existing Mixr theme system (`src/theme/`), `expo-blur`, `expo-linear-gradient`, `lucide-react-native`
-- **Animations**: `react-native-reanimated`, `react-native-gesture-handler`
-- **Maps**: `react-native-maps` (new dependency)
-- **State**: Local state + AsyncStorage for saved presets
-- **Data**: Mock data system (`src/data/mockData.ts`)
-- **Database**: None (mock data only)
+
+- **Framework**: Expo SDK 54 + React Native 0.81
+- **Routing**: Expo Router v6 (file-based, typed routes)
+- **UI**: Custom components with expo-blur, expo-linear-gradient
+- **Animations**: react-native-reanimated
+- **Gestures**: react-native-gesture-handler
+- **Icons**: lucide-react-native
+- **Maps**: react-native-maps (already optional dep)
+- **Location**: expo-location (to be added)
+- **Data**: Mock data (no backend)
+- **Language**: TypeScript strict mode
 
 ## Dependencies
-- Extends the existing Discover tab (`app/(tabs)/discover.tsx`)
-- May add a new Shows/Events tab to the tab bar
-- Uses existing UI components from `src/components/ui/`
-- Extends existing type definitions in `src/types/`
-- Extends mock data in `src/data/mockData.ts`
+
+- The existing Shows tab (from PR #3) should be reworked as part of this feature — integrate location-based discovery into it
+- Existing UI components in src/components/ui/ should be enhanced, not replaced
+- Existing theme tokens in src/theme/ should be evolved, not wholesale replaced
+- Mock data in src/data/mockData.ts already has 9 venues with lat/lng and 18 shows
 
 ## Configuration
+
 - Stack: expo-react-native
-- API Style: rest (mock data layer)
-- Complexity: medium
+- API Style: rest (N/A — frontend only with mock data)
+- Complexity: complex
+
+## Current Codebase Context
+
+### Existing Screens
+- **Feed (Home)**: Vertical feed of content cards with hero images, DJ info, action buttons
+- **Discover**: DJ cards with follow buttons, horizontal genre pill filter
+- **Shows**: Search bar, filter chips, sort pills, list/map view toggle, pagination
+- **Profile**: Animated avatar, stats cards, achievements, settings menu
+- **DJ Detail**: Parallax hero, stats row, genre pills, follow/message buttons
+
+### Existing Design Language
+- Glassmorphism with BlurView (intensity 20)
+- Purple/indigo/teal accent palette
+- Spring physics for interactions (damping 12-20, stiffness 150-400)
+- 1px subtle glass borders
+- Dark backgrounds (#07070A primary)
+- Inter font family with defined type scale
+
+### Existing Animation Hooks
+- useStaggerEntrance, useHeartBurst, useRingRotation, useCountUp, useStreakPulse, useTabMorph, useConfetti, useFollowMorph, useGenrePillMorph, useParallax
+
+### Mock Data Available
+- 6 DJs, 5 genres, 3 feed items, 9 venues (with lat/lng), 18 shows (with dates, prices, popularity)
