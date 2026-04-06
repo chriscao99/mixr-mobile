@@ -28,5 +28,5 @@ export const screen = {
   paddingH: 20,
   statusBarHeight: 62,
   tabBarHeight: 95, // 62px pill + padding
-  gap: 28,
+  gap: 32,
 } as const;

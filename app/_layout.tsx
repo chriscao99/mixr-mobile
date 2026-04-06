@@ -13,6 +13,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { colors } from '../src/theme';
+import { UserProvider } from '../src/context/UserContext';
+import { ShowSearchProvider } from '../src/context/ShowSearchContext';
 
 export {
   ErrorBoundary,
@@ -48,36 +50,40 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-      <StatusBar barStyle="light-content" />
-      <Stack
-        screenOptions={{
-          contentStyle: { backgroundColor: colors.bgPrimary },
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="dj/[id]"
-          options={{
-            headerShown: false,
-            presentation: 'card',
-          }}
-        />
-        <Stack.Screen
-          name="show/[id]"
-          options={{
-            headerShown: false,
-            presentation: 'card',
-          }}
-        />
-        <Stack.Screen
-          name="filter-modal"
-          options={{
-            presentation: 'modal',
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <UserProvider>
+        <ShowSearchProvider>
+          <StatusBar barStyle="light-content" />
+          <Stack
+            screenOptions={{
+              contentStyle: { backgroundColor: colors.bgPrimary },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="dj/[id]"
+              options={{
+                headerShown: false,
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="show/[id]"
+              options={{
+                headerShown: false,
+                presentation: 'card',
+              }}
+            />
+            <Stack.Screen
+              name="filter-modal"
+              options={{
+                presentation: 'modal',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen name="settings" options={{ headerShown: false }} />
+          </Stack>
+        </ShowSearchProvider>
+      </UserProvider>
     </GestureHandlerRootView>
   );
 }
